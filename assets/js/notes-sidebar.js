@@ -4,8 +4,17 @@ document.addEventListener("DOMContentLoaded", function () {
   var filterInput = document.getElementById("notes-filter-input");
   if (!listEl || !contentEl || !filterInput) return;
 
-  var base = (window.base_url || ".").replace(/\/$/, "");
-  var indexPath = base + "/search/search_index.json";
+  function getAbsoluteUrl(loc) {
+    // 去掉开头的 /（如果有），避免双斜杠
+    var cleanLoc = String(loc || "").replace(/^\/+/, "");
+    // 如果 base 是 "." 或者空，我们需要算一个基于网站根目录的绝对路径，
+    // 因为在 GitHub Pages 根目录下，window.base_url 在 notes/index.html 里是 ".."
+    var rootBase = window.base_url || ".";
+    var prefix = rootBase.replace(/\/$/, "");
+    return prefix + "/" + cleanLoc;
+  }
+
+  var indexPath = getAbsoluteUrl("search/search_index.json");
 
   function titleFromLocation(loc) {
     var s = String(loc || "")
@@ -68,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function loadNote(location, meta) {
-      fetch(base + "/" + location)
+      fetch(getAbsoluteUrl(location))
         .then(function (res) {
           if (!res.ok) throw new Error("note load failed");
           return res.text();
