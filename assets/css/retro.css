@@ -326,6 +326,19 @@ li.next {
   line-height: 1.25;
 }
 
+.notes-link-title {
+  display: block;
+  font-weight: 700;
+}
+
+.notes-link-meta {
+  display: block;
+  font-size: 10px;
+  color: #5b4129;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
 .notes-link:hover,
 .notes-link.active {
   background: rgba(223, 189, 126, 0.35);

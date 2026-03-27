@@ -15,6 +15,33 @@ document.addEventListener("DOMContentLoaded", function () {
     return s || "Untitled";
   }
 
+  /**
+   * 文件名约定：{任意标题}-YYYY-MM-DD.md（日期在末尾、扩展名前）
+   * 子目录名作为 TAG（不含保留段 _sync）
+   */
+  function parseNoteLocation(loc) {
+    var path = String(loc || "").replace(/\/$/, "");
+    var parts = path.split("/");
+    var file = parts[parts.length - 1] || "";
+    var m = file.match(/^(.+)-(\d{4}-\d{2}-\d{2})\.md$/i);
+    var title;
+    var dateStr = "";
+    if (m) {
+      title = m[1];
+      dateStr = m[2];
+    } else {
+      title = file.replace(/\.md$/i, "").replace(/-/g, " ");
+    }
+    var tags = [];
+    for (var i = 1; i < parts.length - 1; i++) {
+      var seg = parts[i];
+      if (seg && seg !== "_sync") {
+        tags.push(seg);
+      }
+    }
+    return { title: title || "Untitled", date: dateStr, tags: tags };
+  }
+
   var allItems = [];
 
   function render(items) {
@@ -46,10 +73,27 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     items.forEach(function (item, idx) {
+      var meta = item._meta || parseNoteLocation(item.location);
       var a = document.createElement("a");
       a.className = "notes-link" + (idx === 0 ? " active" : "");
       a.href = "#";
-      a.textContent = item.title || titleFromLocation(item.location);
+      var titleSpan = document.createElement("span");
+      titleSpan.className = "notes-link-title";
+      titleSpan.textContent = meta.title;
+      var metaLine = document.createElement("span");
+      metaLine.className = "notes-link-meta";
+      var metaBits = [];
+      if (meta.date) {
+        metaBits.push(meta.date);
+      }
+      meta.tags.forEach(function (t) {
+        metaBits.push(t);
+      });
+      metaLine.textContent = metaBits.join(" · ");
+      a.appendChild(titleSpan);
+      if (metaBits.length) {
+        a.appendChild(metaLine);
+      }
       a.addEventListener("click", function (e) {
         e.preventDefault();
         listEl.querySelectorAll(".notes-link").forEach(function (x) {
@@ -77,7 +121,23 @@ document.addEventListener("DOMContentLoaded", function () {
     render(filtered);
   }
 
-  filterInput.addEventListener("input", applyFilter);
+  var FILTER_DEBOUNCE_MS = 120;
+  var filterTimer = null;
+  filterInput.addEventListener("input", function () {
+    if (filterTimer) {
+      clearTimeout(filterTimer);
+      filterTimer = null;
+    }
+    var raw = (filterInput.value || "").trim();
+    if (!raw) {
+      applyFilter();
+      return;
+    }
+    filterTimer = setTimeout(function () {
+      filterTimer = null;
+      applyFilter();
+    }, FILTER_DEBOUNCE_MS);
+  });
 
   fetch(indexPath)
     .then(function (res) {
@@ -92,6 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Only keep notes page entries; skip notes home and section anchors.
         if (!loc.startsWith("notes/")) return;
         if (loc === "notes/" || loc.includes("#")) return;
+        if (loc === "notes/index.md") return;
         if (!uniq.has(loc)) {
           uniq.set(loc, {
             location: loc,
@@ -106,12 +167,32 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       allItems = Array.from(uniq.values())
         .map(function (item) {
-          item._searchBlob = (item.title + " " + item.location + " " + item.text).toLowerCase();
+          item._meta = parseNoteLocation(item.location);
+          var m = item._meta;
+          item._dateParsed = m.date
+            ? new Date(m.date + "T00:00:00").getTime()
+            : 0;
+          item._searchBlob = (
+            m.title +
+            " " +
+            m.date +
+            " " +
+            m.tags.join(" ") +
+            " " +
+            item.title +
+            " " +
+            item.location +
+            " " +
+            item.text
+          ).toLowerCase();
           return item;
         })
         .sort(function (a, b) {
-        return b.location.localeCompare(a.location);
-      });
+          if (a._dateParsed !== b._dateParsed) {
+            return b._dateParsed - a._dateParsed;
+          }
+          return b.location.localeCompare(a.location);
+        });
       render(allItems);
     })
     .catch(function () {
