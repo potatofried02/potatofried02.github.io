@@ -86,6 +86,13 @@ document.addEventListener("DOMContentLoaded", function () {
         fetchUrl += "index.html";
       }
 
+      // 将 URL 里的百分号编码解码为原文，防止某些服务器 404
+      try {
+        fetchUrl = decodeURI(fetchUrl);
+      } catch (e) {
+        // ignore
+      }
+
       fetch(fetchUrl)
         .then(function (res) {
           if (!res.ok) throw new Error("note load failed: " + res.status + " for " + fetchUrl);
