@@ -8,7 +8,7 @@
         
         <link rel="canonical" href="https://potatofried02.github.io/personal-website/notes/">
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Notes Home - Personal Website</title>
+        <title>Notes - Personal Website</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/fontawesome.min.css" rel="stylesheet">
         <link href="../css/brands.min.css" rel="stylesheet">
@@ -17,6 +17,7 @@
         <link href="../css/base.css" rel="stylesheet">
         <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
         <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
         <link href="../assets/css/retro.css" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
         <script>hljs.highlightAll();</script> 
@@ -39,33 +40,7 @@
                                 <a href=".." class="nav-link">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../about/" class="nav-link">About</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="../publications/" class="nav-link">Publications</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="../cv/" class="nav-link">CV</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="../research/" class="nav-link">Research</a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Notes</a>
-                                <ul class="dropdown-menu">
-                                    
-<li>
-    <a href="./" class="dropdown-item active" aria-current="page">Notes Home</a>
-</li>
-                                    
-<li>
-    <a href="2026-03-27-reading-rf-genesis/" class="dropdown-item">2026-03-27 Reading (RF Genesis)</a>
-</li>
-                                    
-<li>
-    <a href="2026-03-27-build-log-mkdocs-ghpages/" class="dropdown-item">2026-03-27 Build Log</a>
-</li>
-                                </ul>
+                                <a href="./" class="nav-link active" aria-current="page">Notes</a>
                             </li>
                         </ul>
 
@@ -76,12 +51,12 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../research/" class="nav-link">
+                                <a rel="prev" href=".." class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="2026-03-27-reading-rf-genesis/" class="nav-link">
+                                <a rel="next" class="nav-link disabled">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
@@ -102,36 +77,22 @@
     
     <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
         <ul class="nav flex-column">
-            
-            <li class="nav-item" data-bs-level="1"><a href="#notes" class="nav-link">Notes</a>
-              <ul class="nav flex-column">
-            <li class="nav-item" data-bs-level="2"><a href="#2026-03" class="nav-link">2026-03</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-bs-level="2"><a href="#writing-convention" class="nav-link">Writing Convention</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-              </ul>
-            </li>
         </ul>
     </div>
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="notes">Notes</h1>
-<p>这里记录阶段性阅读、实验想法和实现备忘。内容以短文档为主，持续增量更新。</p>
-<h2 id="2026-03">2026-03</h2>
-<ul>
-<li><a href="2026-03-27-reading-rf-genesis/">2026-03-27 Reading Note: RF Genesis</a></li>
-<li><a href="2026-03-27-build-log-mkdocs-ghpages/">2026-03-27 Build Log: MkDocs + GitHub Pages</a></li>
-</ul>
-<h2 id="writing-convention">Writing Convention</h2>
-<ul>
-<li>文件名建议：<code>YYYY-MM-DD-topic.md</code></li>
-<li>每篇建议包含：背景、要点、下一步</li>
-</ul></div>
+<div class="notes-shell">
+  <aside class="notes-sidebar">
+    <input id="notes-filter-input" class="notes-filter-input" type="search" placeholder="Search notes..." aria-label="Search notes">
+    <!-- Notes List -->
+    <div id="notes-auto-list"></div>
+    <!-- 左栏由 notes 目录自动生成。新增笔记后重新构建即可出现。 -->
+  </aside>
+  <section class="notes-viewer">
+    <article id="notes-content" class="notes-content-area"></article>
+  </section>
+</div></div>
             </div>
         </div>
 
@@ -145,6 +106,8 @@
                 shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
         </script>
         <script src="../js/base.js"></script>
+        <script src="../assets/js/retro-nav.js"></script>
+        <script src="../assets/js/notes-sidebar.js"></script>
         <script src="../search/main.js"></script>
 
         <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
