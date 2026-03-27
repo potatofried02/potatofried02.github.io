@@ -276,21 +276,59 @@ li.next {
   padding-bottom: 0 !important;
 }
 
-/* Notes page: old-forum style split view */
+/* --------------------------------------
+ * Notes page: old-forum style split view 
+ * -------------------------------------- */
 .notes-shell {
   display: grid;
   grid-template-columns: 220px 1fr;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 2px;
+  margin-top: 2px; /* 整个区域距离上方的间距 */
   background: transparent;
 }
 
+/* 左侧列表栏（桌面版右侧有竖线） */
 .notes-sidebar {
   border: 0;
   border-right: 1px solid #7a5d3c;
   background: transparent;
-  padding: 4px 10px 4px 0;
+  padding: 1px 10px 1px 0;
 }
+
+/* 右侧正文区容器 */
+.notes-viewer {
+  border: 0;
+  background: transparent;
+  min-height: 560px;
+}
+
+.notes-content-area {
+  min-height: 560px;
+  padding: 4px 0 4px 16px; /* 控制右侧正文区与中间竖线的距离 */
+}
+
+.notes-content-area h1 {
+  margin-top: 0;
+}
+
+/* -- 响应式：窄屏幕下改为上下排布 -- */
+@media (max-width: 1000px) {
+  .notes-shell {
+    grid-template-columns: 1fr; /* 改为单列排布 */
+  }
+
+  .notes-sidebar {
+    border-right: 0; /* 删掉右侧竖线 */
+    border-bottom: 1px solid #7a5d3c; /* 改成底部横线 */
+    padding: 1px 0 2px 0;
+  }
+
+  .notes-content-area {
+    min-height: 500px;
+    padding: 8px 0 0 0; /* 取消左侧距离，增加上边距 */
+  }
+}
+/* -------------------------------------- */
 
 .notes-filter-input {
   width: 100%;
@@ -336,9 +374,10 @@ li.next {
 .notes-article-meta {
   font-size: 11px;
   color: #5b4129;
-  border-bottom: 1px dotted #8b6a44;
-  padding-bottom: 6px;
-  margin-bottom: 10px;
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 16px;
 }
 
 
@@ -354,37 +393,6 @@ li.next {
   color: #5b4129;
 }
 
-.notes-viewer {
-  border: 0;
-  background: transparent;
-  min-height: 560px;
-}
-
-.notes-content-area {
-  min-height: 560px;
-  padding: 4px 0 4px 8px;
-}
-
-.notes-content-area h1 {
-  margin-top: 0;
-}
-
-@media (max-width: 1000px) {
-  .notes-shell {
-    grid-template-columns: 1fr;
-  }
-
-  .notes-sidebar {
-    border-right: 0;
-    border-bottom: 1px solid #7a5d3c;
-    padding: 4px 0 8px 0;
-  }
-
-  .notes-content-area {
-    min-height: 500px;
-    padding: 8px 0 0 0;
-  }
-}
 
 /* 搜索控件也要同步变矮，否则会把栏撑高 */
 .retro-search-form input[type="search"],
