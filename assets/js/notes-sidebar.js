@@ -77,15 +77,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function loadNote(location, meta) {
-      fetch(getAbsoluteUrl(location))
+      // 在静态服务器中，如果 location 是目录，fetch 可能不会自动补充 index.html
+      var fetchUrl = getAbsoluteUrl(location);
+      if (!fetchUrl.endsWith(".html")) {
+        if (!fetchUrl.endsWith("/")) {
+          fetchUrl += "/";
+        }
+        fetchUrl += "index.html";
+      }
+
+      fetch(fetchUrl)
         .then(function (res) {
-          if (!res.ok) throw new Error("note load failed");
+          if (!res.ok) throw new Error("note load failed: " + res.status + " for " + fetchUrl);
           return res.text();
         })
         .then(function (html) {
           var doc = new DOMParser().parseFromString(html, "text/html");
           var main = doc.querySelector(".col-md-9[role='main']");
-          if (!main) throw new Error("note main not found");
+          if (!main) throw new Error("note main not found in " + fetchUrl);
           contentEl.innerHTML = "";
           var metaRow = document.createElement("div");
           metaRow.className = "notes-article-meta";
@@ -105,8 +114,8 @@ document.addEventListener("DOMContentLoaded", function () {
           bodyWrap.innerHTML = main.innerHTML;
           contentEl.appendChild(bodyWrap);
         })
-        .catch(function () {
-          contentEl.innerHTML = '<div class="notes-hint">Not found.</div>';
+        .catch(function (e) {
+          contentEl.innerHTML = '<div class="notes-hint">Not found.<br><br><small style="color:#a87445;">Debug info: ' + e.message + '</small></div>';
         });
     }
 
