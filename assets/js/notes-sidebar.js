@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var tags = [];
     for (var i = 1; i < parts.length - 1; i++) {
       var seg = parts[i];
-      if (seg && seg !== "_sync") {
+      if (seg && seg !== "posts") {
         tags.push(seg);
       }
     }
