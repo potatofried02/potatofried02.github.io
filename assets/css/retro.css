@@ -331,13 +331,16 @@ li.next {
   font-weight: 700;
 }
 
-.notes-link-meta {
-  display: block;
-  font-size: 10px;
+/* 日期与 TAG 已移至正文顶部；侧栏不再使用 .notes-link-meta */
+
+.notes-article-meta {
+  font-size: 11px;
   color: #5b4129;
-  font-weight: 400;
-  margin-top: 2px;
+  border-bottom: 1px dotted #8b6a44;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
 }
+
 
 .notes-link:hover,
 .notes-link.active {

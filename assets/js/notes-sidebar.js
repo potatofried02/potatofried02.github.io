@@ -15,15 +15,27 @@ document.addEventListener("DOMContentLoaded", function () {
     return s || "Untitled";
   }
 
+  function decodePathSegment(seg) {
+    if (!seg) {
+      return seg;
+    }
+    try {
+      return decodeURIComponent(seg);
+    } catch (e) {
+      return seg;
+    }
+  }
+
   /**
-   * 文件名约定：{任意标题}-YYYY-MM-DD.md（日期在末尾、扩展名前）
-   * 子目录名作为 TAG（不含保留段 _sync）
+   * MkDocs 索引里的 location 可能对中文路径分段做了 URL 编码，需解码后再解析标题/TAG。
+   * 请求页面时仍使用原始 location 字符串（与静态文件路径一致）。
    */
   function parseNoteLocation(loc) {
     var path = String(loc || "").replace(/\/$/, "");
-    var parts = path.split("/");
+    var parts = path.split("/").map(decodePathSegment);
     var file = parts[parts.length - 1] || "";
-    var m = file.match(/^(.+)-(\d{4}-\d{2}-\d{2})\.md$/i);
+    // 索引里常见两种：xxx-YYYY-MM-DD.md 或 MkDocs 用的目录 URL 最后一段 xxx-YYYY-MM-DD（无 .md）
+    var m = file.match(/^(.+)-(\d{4}-\d{2}-\d{2})(\.md)?$/i);
     var title;
     var dateStr = "";
     if (m) {
@@ -55,7 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    function loadNote(location) {
+    function loadNote(location, meta) {
       fetch(base + "/" + location)
         .then(function (res) {
           if (!res.ok) throw new Error("note load failed");
@@ -65,7 +77,24 @@ document.addEventListener("DOMContentLoaded", function () {
           var doc = new DOMParser().parseFromString(html, "text/html");
           var main = doc.querySelector(".col-md-9[role='main']");
           if (!main) throw new Error("note main not found");
-          contentEl.innerHTML = main.innerHTML;
+          contentEl.innerHTML = "";
+          var metaRow = document.createElement("div");
+          metaRow.className = "notes-article-meta";
+          var bits = [];
+          if (meta.date) {
+            bits.push(meta.date);
+          }
+          if (meta.tags && meta.tags.length) {
+            bits.push("TAG: " + meta.tags.join(" · "));
+          }
+          if (bits.length) {
+            metaRow.textContent = bits.join("  ·  ");
+            contentEl.appendChild(metaRow);
+          }
+          var bodyWrap = document.createElement("div");
+          bodyWrap.className = "notes-article-body";
+          bodyWrap.innerHTML = main.innerHTML;
+          contentEl.appendChild(bodyWrap);
         })
         .catch(function () {
           contentEl.innerHTML = '<div class="notes-hint">Not found.</div>';
@@ -80,33 +109,20 @@ document.addEventListener("DOMContentLoaded", function () {
       var titleSpan = document.createElement("span");
       titleSpan.className = "notes-link-title";
       titleSpan.textContent = meta.title;
-      var metaLine = document.createElement("span");
-      metaLine.className = "notes-link-meta";
-      var metaBits = [];
-      if (meta.date) {
-        metaBits.push(meta.date);
-      }
-      meta.tags.forEach(function (t) {
-        metaBits.push(t);
-      });
-      metaLine.textContent = metaBits.join(" · ");
       a.appendChild(titleSpan);
-      if (metaBits.length) {
-        a.appendChild(metaLine);
-      }
       a.addEventListener("click", function (e) {
         e.preventDefault();
         listEl.querySelectorAll(".notes-link").forEach(function (x) {
           x.classList.remove("active");
         });
         a.classList.add("active");
-        loadNote(item.location);
+        loadNote(item.location, meta);
       });
       listEl.appendChild(a);
     });
 
     // Default show first note.
-    loadNote(items[0].location);
+    loadNote(items[0].location, items[0]._meta || parseNoteLocation(items[0].location));
   }
 
   function applyFilter() {
@@ -179,9 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
             " " +
             m.tags.join(" ") +
             " " +
-            item.title +
-            " " +
-            item.location +
+            (item.title || "") +
             " " +
             item.text
           ).toLowerCase();
