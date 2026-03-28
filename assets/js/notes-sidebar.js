@@ -102,6 +102,26 @@ document.addEventListener("DOMContentLoaded", function () {
           var doc = new DOMParser().parseFromString(html, "text/html");
           var main = doc.querySelector(".col-md-9[role='main']");
           if (!main) throw new Error("note main not found in " + fetchUrl);
+
+          // Fix relative image paths because content is displayed in /notes/ instead of its own folder
+          // The base for these images should be the folder of the note itself
+          var noteBaseUrl = fetchUrl.substring(0, fetchUrl.lastIndexOf("/") + 1);
+          main.querySelectorAll("img").forEach(function (img) {
+            var src = img.getAttribute("src");
+            // If it's a relative path (not starting with http, /, data:, etc.)
+            if (src && !src.match(/^(https?:|\/|data:)/)) {
+              // Create an absolute URL string combining noteBaseUrl and the relative src
+              // This relies on the browser's URL parser to resolve ../ and ./ correctly
+              try {
+                // If base is a fully qualified URL
+                img.src = new URL(src, new URL(noteBaseUrl, window.location.href)).href;
+              } catch(e) {
+                // Fallback for very old browsers, just append
+                img.src = noteBaseUrl + src;
+              }
+            }
+          });
+
           contentEl.innerHTML = "";
           var metaRow = document.createElement("div");
           metaRow.className = "notes-article-meta";
@@ -141,13 +161,42 @@ document.addEventListener("DOMContentLoaded", function () {
           x.classList.remove("active");
         });
         a.classList.add("active");
+        
+        // 更新 URL 里的 Hash (去掉 notes/，因为外层已经是 notes/ 了，保持链接干净)
+        var hashPath = item.location.replace(/^notes\//, "");
+        history.replaceState(null, "", "#" + hashPath);
+
         loadNote(item.location, meta);
       });
       listEl.appendChild(a);
     });
 
-    // Default show first note.
-    loadNote(items[0].location, items[0]._meta || parseNoteLocation(items[0].location));
+    // Default show first note or the one from the URL Hash
+    var targetLocation = items[0].location;
+    var targetMeta = items[0]._meta || parseNoteLocation(targetLocation);
+
+    if (window.location.hash) {
+      // 提取 hash 中的路径（去掉开头的 #），由于 hash 里的中文往往是 URL 编码的，解码一次以利于匹配
+      var hashParam = decodeURIComponent(window.location.hash.substring(1));
+      // 循环对比 items 里的 location，看哪个的结尾包含了 hashParam
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i];
+        if (it.location.endsWith(hashParam) || it.location === "notes/" + hashParam) {
+          targetLocation = it.location;
+          targetMeta = it._meta || parseNoteLocation(targetLocation);
+          
+          // 给左侧边栏高亮这一个选中的
+          var matchedLink = listEl.children[i];
+          if (matchedLink) {
+             listEl.querySelectorAll(".notes-link").forEach(function(x) { x.classList.remove("active"); });
+             matchedLink.classList.add("active");
+          }
+          break;
+        }
+      }
+    }
+
+    loadNote(targetLocation, targetMeta);
   }
 
   function applyFilter() {
